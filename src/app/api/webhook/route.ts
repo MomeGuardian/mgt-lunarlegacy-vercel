@@ -1,5 +1,6 @@
 // src/app/api/webhook/route.ts
 import { supabase } from "@/lib/supabase";
+import { postgres } from '@supabase/supabase-js';
 import { NextRequest } from "next/server";
 
 const TOKEN_MINT = "59eXaVJNG441QW54NTmpeDpXEzkuaRjSLm8M6N4Gpump";
@@ -39,7 +40,7 @@ export async function POST(req: NextRequest) {
         await supabase
           .from("users")
           .update({
-            pending_reward: supabase.raw(`pending_reward + ${reward}`),
+            pending_reward: supabase.postgres.raw(`pending_reward + ${reward}`),
           })
           .eq("wallet", buyerData.referrer);
       }
