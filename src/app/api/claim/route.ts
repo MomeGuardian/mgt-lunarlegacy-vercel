@@ -4,7 +4,9 @@ import { Connection, Keypair, PublicKey, Transaction } from "@solana/web3.js";
 import { getAssociatedTokenAddress, createTransferInstruction } from "@solana/spl-token";
 import { NextRequest } from "next/server";
 
-const REWARD_WALLET_SECRET = [3,118,210,210,94,28,92,197,11,83,94,83,171,241,76,123,243,221,138,219,63,230,18,248,229,198,24,250,37,241,33,62,190,166,156,198,247,252,50,168,199,77,81,197,188,92,74,158,166,92,190,111,189,84,190,187,238,92,94,87,35,86,92,221,112,84]; // 你的私钥数组
+const REWARD_WALLET_SECRET = [146,144,106,181,118,127,45,134,180,42,167,10,72,102,206,6,36,28,
+  76,251,237,28,133,62,10,112,61,80,36,163,144,93,61,220,252,226,184,145,113,251,255,126,78,
+  200,154,200,183,219,232,186,226,55,134,146,169,131,157,228,123,70,46,55,251,226];
 const TOKEN_MINT = new PublicKey("59eXaVJNG441QW54NTmpeDpXEzkuaRjSLm8M6N4Gpump");
 const DECIMALS = 4;
 
