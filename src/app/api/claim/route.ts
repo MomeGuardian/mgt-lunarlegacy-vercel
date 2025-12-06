@@ -58,9 +58,3 @@ export async function POST(req: NextRequest) {
     return new Response(err.message || "Claim failed", { status: 500 });
   }
 }
-
-export const config = {
-  api: {
-    bodyParser: true,
-  },
-};
