@@ -1,59 +1,66 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { FC } from "react";
 
 interface PriceChartProps {
-tokenAddress: string; 
+tokenAddress: string;
 }
 
-export default function PriceChart({ tokenAddress }: PriceChartProps) {
+const PriceChart: FC<PriceChartProps> = ({ tokenAddress }) => {
+
+const openAve = () => window.open(`https://ave.ai/token/${tokenAddress}-solana`, '_blank');
+const openDex = () => window.open(`https://dexscreener.com/solana/${tokenAddress}`, '_blank');
+
 return (
-    <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.6, delay: 0.4 }}
-    className="w-full relative group"
-    >
-    <div className="relative overflow-hidden rounded-3xl border border-purple-500/30 bg-gray-900/60 backdrop-blur-md shadow-2xl">
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-50"></div>
-        
-        <div className="px-6 py-4 border-b border-gray-800 flex justify-between items-center flex-wrap gap-3">
-        <h3 className="text-xl font-bold flex items-center gap-2">
-            <span>📊</span>
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-blue-500">
-            实时走势 (MGT/SOL)
-            </span>
-        </h3>
-
-        <a 
-            href={`https://ave.ai/token/${tokenAddress}-solana?from=Default`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 px-3 py-1.5 bg-green-600/20 hover:bg-green-600/40 border border-green-500/50 rounded-lg transition-all text-xs font-bold text-green-400 shadow-[0_0_10px_rgba(74,222,128,0.2)] hover:shadow-[0_0_15px_rgba(74,222,128,0.4)]"
-        >
-            <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-            </span>
-            Ave.ai (China🎗️) ↗
-        </a>
-        </div>
-
-        <div className="w-full h-[350px] md:h-[600px] relative bg-gray-900">
-            <div className="absolute inset-0 flex items-center justify-center text-gray-600 text-sm -z-10">
-                图表加载中... (如长时间未显示，请点击右上角 Ave.ai)
+    <div className="w-full max-w-6xl mx-auto">
+      <div className="block md:hidden">
+        <div className="bg-[#0a0a0a]/80 backdrop-blur-md border border-purple-500/20 rounded-2xl p-5 shadow-[0_0_30px_-10px_rgba(168,85,247,0.15)] relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-purple-600/10 rounded-full blur-[50px] -z-10"></div>
+          
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xl">📊</span>
+              <h3 className="text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
+                实时走势 (MGT/SOL)
+              </h3>
             </div>
-            
+
+            <button
+              onClick={openAve}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#111] hover:bg-[#222] border border-green-500/30 rounded-xl transition-all active:scale-95 group"
+            >
+              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_#22c55e]"></span>
+              <span className="font-bold text-green-400">Ave.ai (China 🎗️) ↗</span>
+            </button>
+
+            <button
+              onClick={openDex}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#111] hover:bg-[#222] border border-gray-600 rounded-xl transition-all active:scale-95"
+            >
+              <img src="https://dexscreener.com/favicon.ico" alt="Dex" className="w-4 h-4 opacity-80" />
+              <span className="font-bold text-gray-300">DexScreener (Global) ↗</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="hidden md:block">
+        <div className="bg-[#0a0a0a] border border-purple-500/20 rounded-2xl overflow-hidden shadow-2xl h-[600px] w-full relative">
+            <div className="absolute inset-0 flex items-center justify-center text-gray-500 z-0">
+                <span className="animate-pulse">Loading Chart...</span>
+            </div>
+
             <iframe 
-            src={`https://dexscreener.com/solana/${tokenAddress}?embed=1&theme=dark&trades=0&info=0`}
-            className="absolute inset-0 w-full h-full"
-            style={{ border: 0 }}
-            title="MGT Price Chart"
+                src={`https://dexscreener.com/solana/${tokenAddress}?embed=1&theme=dark&trades=0&info=0`}
+                className="w-full h-full relative z-10"
+                style={{ border: 0 }}
+                title="DexScreener Chart"
             ></iframe>
         </div>
-    </div>
+      </div>
 
-    <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-3xl blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200 -z-10"></div>
-    </motion.div>
-);
-}
+    </div>
+  );
+};
+
+export default PriceChart;
