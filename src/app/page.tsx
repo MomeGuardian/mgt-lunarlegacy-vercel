@@ -26,7 +26,7 @@ const containerVariants = {
 // Navbar 组件
 const Navbar = () => (
   <motion.header
-    className="fixed top-0 left-0 w-full z-50 bg-gray-900/80 backdrop-blur-md shadow-2xl border-b border-white/5"
+    className="fixed top-0 left-0 w-full z-50 bg-gray-900/95 md:bg-gray-900/80 md:backdrop-blur-md shadow-2xl border-b border-white/5"
     initial={{ y: -100 }}
     animate={{ y: 0 }}
     transition={{ delay: 0, duration: 0.5 }}
@@ -369,19 +369,28 @@ export default function Home() {
         <AnimatePresence>
           {showWelcome && (
             <motion.div
-              initial={{ opacity: 0, x: "-50%", y: "-40%" }}
-              animate={{ opacity: 1, x: "-50%", y: "-50%" }}
-              exit={{ opacity: 0, x: "-50%", y: "-40%" }}
-              transition={{ duration: 0.5, type: "spring", stiffness: 200, damping: 20 }}
-              className="fixed top-1/2 left-1/2 z-[60] w-[90%] max-w-sm"
+              initial={{ opacity: 0, y: -20, scale: 0.9 }} // 添加一点缩放动画让出现更灵动
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.9 }}
+              // ⚡️ 核心修改区 ⚡️
+              // 1. top-20 -> top-12: 位置上移
+              // 2. w-[90%] -> w-auto: 宽度改为自适应内容
+              // 3. max-w-sm -> max-w-[220px]: 设置一个更小的最大宽度
+              className="fixed top-12 left-1/2 -translate-x-1/2 z-[60] w-auto max-w-[220px]"
             >
-              <div className="bg-gray-900/90 backdrop-blur-xl rounded-2xl p-6 border border-green-500/50 shadow-[0_0_40px_rgba(34,197,94,0.5)] text-center relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-green-400 to-transparent"></div>
-                <h3 className="text-2xl font-bold text-green-400 mb-2">🎉 连接成功！</h3>
-                <p className="text-gray-300 text-sm mb-3">欢迎加入 MGT 军团</p>
-                <div className="bg-black/40 rounded-lg p-2 font-mono text-xs text-green-300 break-all border border-white/10">
-                  {publicKey?.toBase58()}
-                </div>
+              <div className="bg-gray-800/90 backdrop-blur-sm rounded-lg p-3 border border-green-500/50 text-center shadow-lg flex flex-col items-center">
+                {/* ⚡️ 核心修改区 ⚡️ */}
+                {/* 4. text-lg -> text-sm: 标题字体变小 */}
+                {/* 5. 添加了一个小的 emoji 或图标 */}
+                <h3 className="text-sm font-bold text-green-400 flex items-center justify-center gap-1">
+                  <span>🎉</span> 连接成功!
+                </h3>
+                {/* ⚡️ 核心修改区 ⚡️ */}
+                {/* 6. mt-1 -> mt-0.5: 减小间距 */}
+                {/* 7. text-xs -> text-[10px]: 地址字体变得非常小巧 */}
+                <p className="text-gray-400 text-[10px] mt-0.5 font-mono">
+                  {publicKey?.toBase58().slice(0, 4)}...{publicKey?.toBase58().slice(-4)}
+                </p>
               </div>
             </motion.div>
           )}
@@ -500,7 +509,7 @@ export default function Home() {
                     </span>
                     </div>
                 </button>
-               </div>
+              </div>
 
               {/* K线图 */}
               <div className="w-full mb-4 md:mb-8 mt-4">
@@ -512,7 +521,7 @@ export default function Home() {
                 variants={{ hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1, transition: { delay: 0.8, duration: 0.6 } } }}
                 initial="hidden" 
                 animate="visible"
-                className="bg-gray-900/60 backdrop-blur-xl rounded-2xl md:rounded-3xl p-5 md:p-8 border border-purple-500/30 shadow-[0_0_20px_rgba(168,85,247,0.1)] relative overflow-hidden group"
+                className="bg-gray-900/95 md:bg-gray-900/60 md:backdrop-blur-xl border border-purple-500/30 shadow-none md:shadow-[0_0_20px_rgba(168,85,247,0.1)]"
               >
                 <div className="absolute top-0 right-0 w-64 h-64 bg-purple-600/10 rounded-full blur-3xl -z-10"></div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 items-center divide-y md:divide-y-0 md:divide-x divide-gray-700/50">
@@ -594,7 +603,7 @@ export default function Home() {
                 className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6"
               >
                 {/* 团队业绩 */}
-                <motion.div variants={containerVariants} className="bg-gray-900/60 backdrop-blur rounded-2xl p-5 md:p-6 border border-blue-500/30 relative overflow-hidden">
+                <motion.div variants={containerVariants} className="bg-gray-900/95 md:bg-gray-900/60 md:backdrop-blur rounded-2xl p-5 md:p-6 border border-blue-500/30 relative overflow-hidden">
                   <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50"></div>
                   <div className="flex justify-between items-start">
                     <div className="text-left">
@@ -611,7 +620,7 @@ export default function Home() {
                 </motion.div>
 
                 {/* 待领收益 */}
-                <motion.div variants={containerVariants} className="bg-gray-900/60 backdrop-blur rounded-2xl p-5 md:p-6 border border-yellow-500/30 relative overflow-hidden">
+                <motion.div variants={containerVariants} className="bg-gray-900/95 md:bg-gray-900/60 md:backdrop-blur rounded-2xl p-5 md:p-6 border border-yellow-500/30 relative overflow-hidden">
                   <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-yellow-500 to-transparent opacity-50"></div>
                   <div className="flex justify-between items-start">
                     <div className="text-left">
