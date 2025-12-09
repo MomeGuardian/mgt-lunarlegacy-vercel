@@ -1,4 +1,4 @@
-import type { Metadata, Viewport } from "next";
+import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import WalletContextProvider from "@/components/WalletContextProvider";
@@ -6,21 +6,9 @@ import "@solana/wallet-adapter-react-ui/styles.css";
 import { Toaster } from "react-hot-toast";
 import { Suspense } from "react";
 import Script from "next/script";
-// ✅ 1. 引入刚才新建的组件
-import VConsoleProvider from "@/components/VConsoleProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
-// 保持你的 Viewport 配置不变
-export const viewport: Viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  themeColor: '#000000',
-};
-
-// 保持你的 Metadata 配置不变
 export const metadata: Metadata = {
   metadataBase: new URL('https://mgt-lunarlegacy.vercel.app'),
   title: "$MGT 直推军团 | 5% 返现 + 自动分账",
@@ -30,14 +18,11 @@ export const metadata: Metadata = {
     description: "连接钱包，开启躺赚模式 🚀",
     images: ['/Solana.png'],
   },
+
   icons: {
     icon: '/Solana.png',
     shortcut: '/Solana.png',
     apple: '/Solana.png',
-  },
-  other: {
-    'apple-mobile-web-app-capable': 'yes',
-    'format-detection': 'telephone=no',
   },
 };
 
@@ -50,6 +35,7 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <head>
         <meta name="wallet-connection" content="okxwallet" />
+        
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -68,7 +54,6 @@ export default function RootLayout({
       </head>
 
       <body className={`${inter.className} bg-gray-950 text-white min-h-screen`}>
-        {/* 加载 Jupiter 脚本 */}
         <Script src="https://terminal.jup.ag/main-v2.js" strategy="beforeInteractive" />
 
         <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading app...</div>}>
@@ -88,10 +73,6 @@ export default function RootLayout({
             duration: 3000,
           }}
         />
-
-        {/* ✅ 2. 使用封装好的组件加载 vConsole，解决 Server Component 报错 */}
-        <VConsoleProvider />
-        
       </body>
     </html>
   );
