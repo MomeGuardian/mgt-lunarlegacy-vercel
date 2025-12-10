@@ -417,14 +417,18 @@ export default function Home() {
         toast.error(err.message || "Bind Failed");
     }
   };
-
-// 1. 加载用户数据 (修复版：解决变量重名冲突)
+// ------------------------------------------------------------------
+  // ✅ 1. 加载用户数据 (修复版：已解决变量重名 & 语法错误)
+  // ------------------------------------------------------------------
   useEffect(() => {
+    // 只有当钱包已连接时才执行
     if (connected && publicKey) {
+      
+      // 🌟 定义异步加载函数
       const loadData = async () => {
         try {
-          // A. 获取上级
-          const { data: refData } = await supabase // 👈 改名 refData，防止冲突
+          // A. 获取上级信息 (重命名为 refData)
+          const { data: refData } = await supabase
             .from("users")
             .select("referrer")
             .eq("wallet", publicKey.toBase58())
@@ -432,17 +436,18 @@ export default function Home() {
             
           if (refData?.referrer) setInviter(refData.referrer);
 
-          // B. 获取直推人数
+          // B. 获取直推人数 (count)
           const { count } = await supabase
             .from("users")
             .select("*", { count: "exact", head: true })
             .eq("referrer", publicKey.toBase58());
+          
           setMyRefs(count || 0);
 
-          // C. 获取收益和业绩 (核心修改：一次查询两个字段)
-          const { data: financeData } = await supabase // 👈 改名 financeData，彻底解决报错
+          // C. 获取收益和业绩 (重命名为 financeData)
+          const { data: financeData } = await supabase
             .from("users")
-            .select("pending_reward, team_volume") 
+            .select("pending_reward, team_volume") // 同时查询两个字段
             .eq("wallet", publicKey.toBase58())
             .single();
           
@@ -453,9 +458,10 @@ export default function Home() {
           console.error("加载数据失败:", error);
         }
       };
-      loadData();
+
+      loadData(); // 👈 立即执行
     } else {
-        // 未连接时清空
+        // 未连接时，数据清零
         setMyRefs(0);
         setPendingReward(0);
         setTeamVolume(0);
@@ -463,41 +469,31 @@ export default function Home() {
   }, [publicKey, connected]);
 
 
-  // 2. ⚡️ 实时监听数据变化 (Realtime Listener)
+  // ------------------------------------------------------------------
+  // ✅ 2. 实时监听数据变化 (让业绩实时跳动)
+  // ------------------------------------------------------------------
   useEffect(() => {
     if (!connected || !publicKey) return;
 
-    console.log("正在建立实时监听通道...");
-
+    // 创建实时通道
     const channel = supabase
-      .channel('realtime_users')
+      .channel('realtime_users_updates')
       .on(
         'postgres_changes',
         {
           event: 'UPDATE',
           schema: 'public',
           table: 'users',
-          filter: `wallet=eq.${publicKey.toBase58()}` // 只监听自己
+          filter: `wallet=eq.${publicKey.toBase58()}` // 只监听自己的钱包
         },
         (payload) => {
           const newUser = payload.new as any;
           if (newUser) {
-            console.log("⚡️ 数据实时更新:", newUser);
+            console.log("⚡️ 收到实时更新:", newUser);
             
-            // 实时更新前端状态
+            // 实时更新前端显示的数字
             setPendingReward(newUser.pending_reward || 0);
             setTeamVolume(newUser.team_volume || 0);
-            
-            // 只有当业绩真的增加时才弹窗 (防止普通更新也弹窗)
-            // 这里简单处理，只要有推送到更新就提示
-            toast("🚀 团队业绩刷新！", {
-                icon: '💰',
-                style: {
-                    background: '#16171D',
-                    color: '#fff',
-                    border: '1px solid #22c55e'
-                }
-            });
           }
         }
       )
@@ -508,31 +504,11 @@ export default function Home() {
     };
   }, [connected, publicKey]);
 
-          const { count } = await supabase
-            .from("users")
-            .select("*", { count: "exact", head: true })
-            .eq("referrer", publicKey.toBase58());
-          setMyRefs(count || 0);
 
-          const { data } = await supabase
-            .from("users")
-            .select("pending_reward")
-            .eq("wallet", publicKey.toBase58())
-            .single();
-          setPendingReward(data?.pending_reward || 0);
-          setTeamVolume(0); 
-        } catch (error) {
-          console.error("加载数据失败:", error);
-        }
-      };
-      loadData();
-    } else {
-        setMyRefs(0);
-        setPendingReward(0);
-    }
-  }, [publicKey, connected]);
-
-const claimReward = async () => {
+  // ------------------------------------------------------------------
+  // ✅ 3. 提现功能 (包含撒花特效)
+  // ------------------------------------------------------------------
+  const claimReward = async () => {
     if (!publicKey) return;
     setClaiming(true);
     try {
@@ -544,19 +520,16 @@ const claimReward = async () => {
       const data = await res.json();
       
       if (res.ok) {
-        // ✅ 成功逻辑升级：
-        // 1. 清空余额显示
+        // ✅ 成功逻辑：
         setPendingReward(0);
-        // 2. 记录哈希
         setLastSignature(data.signature);
-        // 3. 打开漂亮弹窗
         setShowClaimSuccess(true);
-        // 4. 触发撒花特效 🎊
+        // 触发撒花特效 🎊
         confetti({
           particleCount: 150,
           spread: 70,
           origin: { y: 0.6 },
-          colors: ['#22c55e', '#eab308', '#a855f7'] // 绿色、金色、紫色
+          colors: ['#22c55e', '#eab308', '#a855f7'] 
         });
       } else {
         const errorMessage = data.error || data.message || JSON.stringify(data);
@@ -569,6 +542,9 @@ const claimReward = async () => {
     setClaiming(false);
   };
   
+  // ------------------------------------------------------------------
+  // ✅ 4. 辅助变量与加载状态
+  // ------------------------------------------------------------------
   const myLink = publicKey && baseUrl ? `${baseUrl}?ref=${publicKey.toBase58()}` : "";
   const contractAddress = "59eXaVJNG441QW54NTmpeDpXEzkuaRjSLm8M6N4Gpump"; 
 
