@@ -159,7 +159,7 @@ const Navbar = ({
                         />
                     ) : (
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-gray-300">
-                           <path fillRule="evenodd" d="M18.685 19.097A9.723 9.723 0 0 0 21.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 0 0 3.065 7.097A9.716 9.716 0 0 0 12 21.75a9.716 9.716 0 0 0 6.685-2.653Zm-12.54-1.285A7.486 7.486 0 0 1 12 15a7.486 7.486 0 0 1 5.855 2.812A8.224 8.224 0 0 1 12 20.25a8.224 8.224 0 0 1-5.855-2.438ZM15.75 9a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" clipRule="evenodd" />
+                          <path fillRule="evenodd" d="M18.685 19.097A9.723 9.723 0 0 0 21.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 0 0 3.065 7.097A9.716 9.716 0 0 0 12 21.75a9.716 9.716 0 0 0 6.685-2.653Zm-12.54-1.285A7.486 7.486 0 0 1 12 15a7.486 7.486 0 0 1 5.855 2.812A8.224 8.224 0 0 1 12 20.25a8.224 8.224 0 0 1-5.855-2.438ZM15.75 9a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" clipRule="evenodd" />
                         </svg>
                     )}
                     {connected && (
@@ -244,6 +244,40 @@ export default function Home() {
 
   const [lang, setLang] = useState<'zh' | 'en'>('zh');
   const t = translations[lang];
+
+  // ✅ 新增：直推列表弹窗控制
+  const [showRefListModal, setShowRefListModal] = useState(false);
+  const [refList, setRefList] = useState<string[]>([]); 
+  const [loadingRefList, setLoadingRefList] = useState(false);
+
+  // ✅ 新增：点击卡片触发的查询函数
+  const handleShowReferrals = async () => {
+    // 这里的逻辑保持不变，确保 publicKey 变量在这个函数上面已经定义了
+    if (!publicKey) return;
+    
+    setLoadingRefList(true);
+    setShowRefListModal(true);
+    
+    try {
+      // 这里的 users 对应数据库表名，referrer 对应字段名
+      const { data, error } = await supabase
+        .from('users')
+        .select('wallet')
+        .eq('referrer', publicKey.toBase58())
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      if (data) {
+        setRefList(data.map(user => user.wallet));
+      }
+    } catch (err) {
+      console.error("查询直推失败:", err);
+      toast.error("加载列表失败");
+    } finally {
+      setLoadingRefList(false);
+    }
+  };
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -916,10 +950,33 @@ export default function Home() {
                         </button>
                     )}
                   </div>
-                  <div className="flex flex-col items-center justify-center p-4">
-                    <p className="text-gray-400 text-xs md:text-sm mb-1">{t.my_referrals}</p>
-                    <p className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-400">{myRefs}</p>
-                  </div>
+
+          {/* 💰 直推总业绩卡片 (已连接数据库) */}
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            className="p-6 rounded-2xl border border-gray-800/50 bg-[#16171D]/50 backdrop-blur-sm flex items-center justify-between group hover:border-blue-500/30 transition-all shadow-lg"
+          >
+            <div>
+              <p className="text-gray-400 text-sm font-medium mb-1 flex items-center gap-2">
+                {t.total_volume || "直推总业绩"}
+                <span className="text-[10px] bg-gray-800 text-gray-500 px-1.5 py-0.5 rounded border border-gray-700">USD</span>
+              </p>
+              <p className="text-xs text-gray-600 mb-2">直推交易额 (U本位)</p>
+              
+              {/* ✅ 核心修改：这里读取 teamVolume 变量，而不是写死 0.00 */}
+              <div className="flex items-baseline gap-1">
+                <span className="text-4xl font-black text-white tracking-tight">
+                  ${teamVolume.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+              </div>
+            </div>
+
+            {/* 图标装饰 */}
+            <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center border border-blue-500/20 group-hover:scale-110 transition-transform duration-300">
+              <span className="text-2xl">💰</span>
+            </div>
+          </motion.div>
+
                   <div className="flex flex-col items-center justify-center p-4 w-full">
                     <p className="text-gray-400 text-xs md:text-sm mb-3">{t.referral_link}</p>
                     <button
@@ -970,6 +1027,82 @@ export default function Home() {
             </p>
             </div>
         </footer>
+
+          {/* 📜 直推名单弹窗 */}
+        <AnimatePresence>
+          {showRefListModal && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setShowRefListModal(false)}>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                onClick={(e) => e.stopPropagation()} // 防止点卡片内部关闭
+                className="w-full max-w-md bg-[#16171D] border border-gray-800 rounded-2xl overflow-hidden shadow-2xl"
+              >
+                {/* 标题栏 */}
+                <div className="p-4 border-b border-gray-800 flex justify-between items-center bg-white/5">
+                  <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                    👥 直推伙伴 ({refList.length})
+                  </h3>
+                  <button onClick={() => setShowRefListModal(false)} className="text-gray-400 hover:text-white transition-colors">
+                    ✕
+                  </button>
+                </div>
+
+                {/* 列表内容区 */}
+                <div className="p-4 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                  {loadingRefList ? (
+                    <div className="text-center py-8 text-gray-500">
+                      <div className="animate-spin w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-2"></div>
+                      加载中...
+                    </div>
+                  ) : refList.length > 0 ? (
+                    <div className="space-y-2">
+                      {refList.map((wallet, index) => (
+                        <div key={index} className="flex items-center justify-between p-3 rounded-xl bg-black/20 border border-gray-800/50 hover:bg-white/5 transition-colors">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-purple-600 flex items-center justify-center text-xs font-bold text-white">
+                              {index + 1}
+                            </div>
+                            <span className="font-mono text-gray-300 text-sm">
+                              {wallet.slice(0, 6)}...{wallet.slice(-6)}
+                            </span>
+                          </div>
+                          
+                          {/* 复制按钮 */}
+                          <button 
+                            onClick={() => {
+                              navigator.clipboard.writeText(wallet);
+                              toast.success("已复制地址");
+                            }}
+                            className="text-gray-600 hover:text-blue-400 text-xs px-2 py-1 rounded bg-gray-800 hover:bg-gray-700 transition-all"
+                          >
+                            COPY
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-10 text-gray-500">
+                      <p className="text-4xl mb-2">🏜️</p>
+                      <p>还没有直推伙伴，快去邀请吧！</p>
+                    </div>
+                  )}
+                </div>
+                
+                {/* 底部按钮 */}
+                <div className="p-4 border-t border-gray-800 bg-black/20">
+                    <button 
+                        onClick={() => setShowRefListModal(false)}
+                        className="w-full py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-xl font-bold transition-all"
+                    >
+                        关闭列表
+                    </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
 
       </motion.div>
     </AnimatePresence>
