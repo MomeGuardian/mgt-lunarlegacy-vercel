@@ -83,16 +83,22 @@ export async function POST(request: Request) {
         });
 
         // B. 更新上级数据
-        const { data: refData } = await supabase.from('users').select('pending_reward, team_volume').eq('wallet', referrer).single();
+        const { data: refData } = await supabase
+            .from('users')
+            .select('pending_reward, team_volume, total_earned') // 👈 多查一个 total_earned
+            .eq('wallet', referrer)
+            .single();
         
         if (refData) {
             const newReward = (refData.pending_reward || 0) + reward;
-            // ✅ 核心修改：team_volume 现在累加的是 USDT 价值，而不是代币数量
             const newVolume = (refData.team_volume || 0) + usdValue; 
+            // ✅ 新增：历史总收益也累加 (这个数字永远不减)
+            const newTotalEarned = (refData.total_earned || 0) + reward;
             
             await supabase.from('users').update({
                 pending_reward: newReward,
-                team_volume: newVolume
+                team_volume: newVolume,
+                total_earned: newTotalEarned // 👈 写入数据库
             }).eq('wallet', referrer);
         }
       } else {
