@@ -874,22 +874,30 @@ export default function Home() {
                 animate="visible"
                 className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6"
               >
-                {/* 团队业绩 */}
-                <div className="bg-gray-900/95 md:bg-gray-900/60 md:backdrop-blur rounded-2xl p-5 md:p-6 border border-blue-500/30 relative overflow-hidden shadow-lg">
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl -z-10"></div>
-                  <div className="flex justify-between items-start">
-                    <div className="text-left">
-                      <p className="text-blue-200 text-sm font-medium">{t.team_volume}</p>
-                      <p className="text-[10px] text-gray-500 mt-0.5">{t.team_volume_desc}</p>
-                    </div>
-                    <div className="p-2 bg-blue-500/20 rounded-lg text-blue-400 text-lg">💰</div>
-                  </div>
-                  <div className="mt-3 text-left">
-                    <p className="text-3xl md:text-4xl font-bold text-white tracking-tight">
-                      ${teamVolume.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                {/* 💰 直推总业绩卡片 (已移除报错的 t.total_volume) */}
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  className="p-6 rounded-2xl border border-gray-800/50 bg-[#16171D]/50 backdrop-blur-sm flex items-center justify-between group hover:border-blue-500/30 transition-all shadow-lg"
+                >
+                  <div>
+                    <p className="text-gray-400 text-sm font-medium mb-1 flex items-center gap-2">
+                      直推总业绩
+                      <span className="text-[10px] bg-gray-800 text-gray-500 px-1.5 py-0.5 rounded border border-gray-700">USD</span>
                     </p>
+                    <p className="text-xs text-gray-600 mb-2">直推交易额 (U本位)</p>
+
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-4xl font-black text-white tracking-tight">
+                        ${teamVolume.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                    </div>
                   </div>
-                </div>
+
+                  {/* 图标装饰 */}
+                  <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center border border-blue-500/20 group-hover:scale-110 transition-transform duration-300">
+                    <span className="text-2xl">💰</span>
+                  </div>
+                </motion.div>
 
                 {/* 待领收益 */}
                 <div className="bg-gray-900/95 md:bg-gray-900/60 md:backdrop-blur rounded-2xl p-5 md:p-6 border border-yellow-500/30 relative overflow-hidden shadow-lg">
@@ -951,29 +959,28 @@ export default function Home() {
                     )}
                   </div>
 
-                  {/* 💰 直推总业绩卡片*/}
+                  {/* 👥 直推人数卡片 (已添加点击事件) */}
                   <motion.div
                     whileHover={{ scale: 1.02 }}
-                    className="p-6 rounded-2xl border border-gray-800/50 bg-[#16171D]/50 backdrop-blur-sm flex items-center justify-between group hover:border-blue-500/30 transition-all shadow-lg"
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleShowReferrals} // 👈 点击触发查询
+                    className="bg-[#16171D] p-6 rounded-2xl border border-gray-800/50 hover:border-blue-500/50 transition-all cursor-pointer group relative overflow-hidden"
                   >
-                    <div>
-                      <p className="text-gray-400 text-sm font-medium mb-1 flex items-center gap-2">
-                        直推总业绩
-                        <span className="text-[10px] bg-gray-800 text-gray-500 px-1.5 py-0.5 rounded border border-gray-700">USD</span>
-                      </p>
-                      <p className="text-xs text-gray-600 mb-2">直推交易额 (U本位)</p>
-
-                      {/* 显示金额 */}
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-4xl font-black text-white tracking-tight">
-                          ${teamVolume.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </span>
-                      </div>
+                    <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                      <span className="text-6xl">👥</span>
                     </div>
 
-                    {/* 图标装饰 */}
-                    <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center border border-blue-500/20 group-hover:scale-110 transition-transform duration-300">
-                      <span className="text-2xl">💰</span>
+                    <div className="flex items-center gap-2 mb-2">
+                      <p className="text-gray-400 text-sm font-medium">我的直推人数</p>
+                       {/* 提示小图标 */}
+                      <span className="bg-blue-500/20 text-blue-400 text-[10px] px-1.5 py-0.5 rounded">点击查看</span>
+                    </div>
+
+                    <div className="flex items-end gap-2">
+                      <h3 className="text-4xl font-black text-white tracking-tight">
+                        {myRefs}
+                      </h3>
+                      <span className="text-gray-500 mb-1.5 font-bold">人</span>
                     </div>
                   </motion.div>
 
