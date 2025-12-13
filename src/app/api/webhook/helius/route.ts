@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server';
 const MGT_MINT = "59eXaVJNG441QW54NTmpeDpXEzkuaRjSLm8M6N4Gpump";
 
 // 🔧 配置：如果 API 查不到价格，就用这个默认价格 (用于测试或预售阶段)
-const DEFAULT_TEST_PRICE = 0.1; // 👈 你可以改成你的预售价格，比如 0.02
+const DEFAULT_TEST_PRICE = 0.00011988; // 👈 你可以改成你的预售价格，比如 0.02
 
 // 💰 1. 获取 MGT 价格 (带保底机制)
 async function getMgtPrice() {
