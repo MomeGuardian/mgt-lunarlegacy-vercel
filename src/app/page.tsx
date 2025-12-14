@@ -513,34 +513,41 @@ export default function Home() {
       const now = new Date();
       const lastTime = lastVestingTime ? new Date(lastVestingTime) : new Date(0);
 
-      // --- 关键算法：全部转成“北京时间对象”来比较 ---
-      const offset = 8 * 60 * 60 * 1000; // 8小时的毫秒数
-      
+      // --- 北京时间转换 ---
+      const offset = 8 * 60 * 60 * 1000; 
       const bjNow = new Date(now.getTime() + offset);
       const bjLast = new Date(lastTime.getTime() + offset);
 
       const todayStr = bjNow.toISOString().split('T')[0];
       const lastDayStr = bjLast.toISOString().split('T')[0];
 
-      // 1. 判断北京日期是否不同
+      // 1. 判断今天能不能领
       if (todayStr !== lastDayStr) {
         // ✅ 不是同一天 -> 可以领！
-        setLiveClaimable(lockedReward / 14);
+        
+        // 🔥 核心修改：前端也加上扫尾判断 (必须和后端保持一致，比如 10)
+        const CLEAR_THRESHOLD = 10; 
+
+        if (lockedReward <= CLEAR_THRESHOLD) {
+            // 🧹 余额很少 -> 显示全部可领
+            setLiveClaimable(lockedReward);
+        } else {
+            // 📉 余额很多 -> 显示 1/14
+            setLiveClaimable(lockedReward / 14);
+        }
+        
         setCountDownStr("✨ 今日额度已释放 ✨");
+
       } else {
-        // ❌ 是同一天 -> 不能领 -> 计算距离北京明天的倒计时
+        // ❌ 是同一天 -> 不能领 -> 计算倒计时
         setLiveClaimable(0); 
 
-        // 计算逻辑：
-        // 取“北京现在的这一天”，往后推一天，设为 00:00:00
         const tomorrowMidnightBj = new Date(bjNow); 
         tomorrowMidnightBj.setUTCDate(tomorrowMidnightBj.getUTCDate() + 1);
         tomorrowMidnightBj.setUTCHours(0, 0, 0, 0);
 
-        // 倒计时 = 明天凌晨 - 现在 (都是北京时间，可以直接减)
         const diff = tomorrowMidnightBj.getTime() - bjNow.getTime();
         
-        // 格式化倒计时
         const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
         const m = Math.floor((diff / (1000 * 60)) % 60);
         const s = Math.floor((diff / 1000) % 60);
@@ -985,7 +992,7 @@ export default function Home() {
                       <button
                       onClick={claimReward}
                       // 没钱的时候禁用按钮
-                      disabled={claiming || liveClaimable <= 0}
+                      disabled={claiming || liveClaimable <= 0.1}
                       className={`
                         relative overflow-hidden px-5 py-6 rounded-xl font-bold text-sm transition-all shadow-lg flex flex-col items-center justify-center min-w-[110px]
                         ${(claiming || liveClaimable <= 0)
