@@ -41,9 +41,8 @@ const translations = {
     copy_link: "复制链接",
     team_volume: "直推总业绩",
     team_volume_desc: "直推交易额",
-    // 👇 修改了这里
     pending_reward: "待释放总额",
-    pending_reward_desc: "每日线性释放 0.2%",
+    pending_reward_desc: "每日 00:00 释放 0.2 可累积%",
     claim_btn: "收取释放",
     claim_loading: "计算释放中...",
     chart_title: "实时走势",
@@ -496,11 +495,10 @@ export default function Home() {
     }
   }, [publicKey, connected]);
 
-// ------------------------------------------------------------------
-  // ✅ 2.useEffect B: 每日 00:00 倒计时检查器
   // ------------------------------------------------------------------
-  // 新增一个状态来存倒计时字符串 (放在组件顶部 const 区域)
-  const [countDownStr, setCountDownStr] = useState(""); 
+  // ✅ useEffect B: 智能累积计算器 (佛系版)
+  // ------------------------------------------------------------------
+  const [countDownStr, setCountDownStr] = useState("");
 
   useEffect(() => {
     // 没钱就不算了
@@ -513,45 +511,61 @@ export default function Home() {
       const now = new Date();
       const lastTime = lastVestingTime ? new Date(lastVestingTime) : new Date(0);
 
-      // --- 北京时间转换 ---
+      // --- 北京时间 00:00 转换 ---
       const offset = 8 * 60 * 60 * 1000; 
-      const bjNow = new Date(now.getTime() + offset);
-      const bjLast = new Date(lastTime.getTime() + offset);
+      // 算出“当前北京时间”的时间戳
+      const bjNowTs = now.getTime() + offset;
+      const bjLastTs = lastTime.getTime() + offset;
 
-      const todayStr = bjNow.toISOString().split('T')[0];
-      const lastDayStr = bjLast.toISOString().split('T')[0];
+      // 向下取整到天 (得到 1970年至今的天数)
+      const dayNow = Math.floor(bjNowTs / (1000 * 60 * 60 * 24));
+      const dayLast = Math.floor(bjLastTs / (1000 * 60 * 60 * 24));
 
-      // 1. 判断今天能不能领
-      if (todayStr !== lastDayStr) {
-        // ✅ 不是同一天 -> 可以领！
-        
-        // 🔥 核心修改：前端也加上扫尾判断 (必须和后端保持一致，比如 10)
-        const CLEAR_THRESHOLD = 10; 
+      // 算出差了几天
+      const daysPassed = dayNow - dayLast;
+
+      // 1. 判断是否可领 (只要差额 >= 1天)
+      if (daysPassed >= 1) {
+        // ✅ 可以领！计算累积金额
+        const CLEAR_THRESHOLD = 10;
+        let amount = 0;
 
         if (lockedReward <= CLEAR_THRESHOLD) {
-            // 🧹 余额很少 -> 显示全部可领
-            setLiveClaimable(lockedReward);
+             amount = lockedReward; // 扫尾
         } else {
-            // 📉 余额很多 -> 显示 1/14
-            setLiveClaimable(lockedReward / 14);
+             amount = (lockedReward / 14) * daysPassed; // 累积倍数
         }
+
+        // 封顶不能超过总额
+        amount = Math.min(amount, lockedReward);
         
-        setCountDownStr("✨ 今日额度已释放 ✨");
+        setLiveClaimable(amount);
+        
+        // 提示文案：告诉用户攒了几天
+        setCountDownStr(`🔥 已累积 ${daysPassed} 天收益 🔥`);
 
       } else {
-        // ❌ 是同一天 -> 不能领 -> 计算倒计时
+        // ❌ 今天领过了 -> 倒计时
         setLiveClaimable(0); 
 
-        const tomorrowMidnightBj = new Date(bjNow); 
+        // 计算距离明天 00:00 的倒计时
+        const bjNowDate = new Date(bjNowTs);
+        const tomorrowMidnightBj = new Date(bjNowDate); 
         tomorrowMidnightBj.setUTCDate(tomorrowMidnightBj.getUTCDate() + 1);
         tomorrowMidnightBj.setUTCHours(0, 0, 0, 0);
 
-        const diff = tomorrowMidnightBj.getTime() - bjNow.getTime();
+        // 注意：这里要减去因为 offset 加上的时间，还原回 UTC 时间戳做差，或者直接用偏移后的时间做差
+        // 最简单的倒计时算法：
+        // 今天的毫秒数 = bjNowTs % (24小时)
+        // 剩余毫秒数 = 24小时 - 今天的毫秒数
+        const msInDay = 1000 * 60 * 60 * 24;
+        const currentDayMs = bjNowTs % msInDay;
+        const diff = msInDay - currentDayMs;
         
         const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
         const m = Math.floor((diff / (1000 * 60)) % 60);
         const s = Math.floor((diff / 1000) % 60);
-        setCountDownStr(`下轮释放: ${h}时${m}分${s}秒`);
+        setCountDownStr(`下轮累积: ${h}时${m}分${s}秒`);
       }
     };
 
@@ -946,7 +960,7 @@ export default function Home() {
                     <div className="flex items-center gap-2 mb-1">
                       <p className="text-gray-500 text-xs font-medium">总锁仓 (Locked)</p>
                       <span className="text-[9px] bg-gray-800 text-gray-500 px-1.5 py-0.5 rounded border border-gray-700">
-                        14天线性释放
+                        14天释放 · 每日累计
                       </span>
                     </div>
                     <div className="flex items-baseline gap-1 opacity-70">
