@@ -108,36 +108,35 @@ export async function POST(request: Request) {
         // B. 更新上级数据
         const { data: refData } = await supabase
             .from('users')
-            .select('pending_reward, total_earned')
+            .select('locked_reward, total_earned, team_volume, month_volume') // 👈 多查几个字段
             .eq('wallet', referrer)
             .single();
         
         if (refData) {
-            const newReward = (refData.pending_reward || 0) + reward;
+            // ❌ 旧逻辑：直接给 pending_reward (删掉)
+            // const newReward = (refData.pending_reward || 0) + reward;
+
+            // ✅ 新逻辑：加到 locked_reward (冻结池)
+            const newLocked = (refData.locked_reward || 0) + reward;
+            
+            // 历史总赚依然累加 (为了好看)
             const newTotalEarned = (refData.total_earned || 0) + reward;
             
+            // 累加本月业绩 (为了考核)
+            const newMonthVolume = (refData.month_volume || 0) + usdValue;
+
+            // 更新数据库
             await supabase.from('users').update({
-                pending_reward: newReward,
-                total_earned: newTotalEarned
+                locked_reward: newLocked,   // 💰 钱进冰箱
+                total_earned: newTotalEarned,
+                month_volume: newMonthVolume
             }).eq('wallet', referrer);
 
-            // C. RPC 安全更新业绩
+            // RPC 更新总业绩 (保持不变)
             const { error: rpcError } = await supabase.rpc('increment_team_volume', {
                 wallet_address: referrer,
                 amount_to_add: usdValue
             });
-
-            if (rpcError) console.error("❌ RPC Error:", rpcError);
-        }
-      } else {
-        // 无上级
-        await supabase.from('transactions').insert({
-            signature,
-            buyer,
-            token_amount: buyAmount,
-            reward_amount: 0,
-            usdt_value: usdValue
-        });
       }
     }
 
