@@ -262,6 +262,7 @@ export default function Home() {
   const [lastVestingTime, setLastVestingTime] = useState<string | null>(null);
   // ✅ 新增：实时计算的“当前可领”金额
   const [liveClaimable, setLiveClaimable] = useState(0);
+  const [countDownStr, setCountDownStr] = useState("");
 
   // ✅ 新增：点击卡片触发的查询函数
   const handleShowReferrals = async () => {
@@ -498,7 +499,6 @@ export default function Home() {
   // ------------------------------------------------------------------
   // ✅ useEffect B: 智能累积计算器 (佛系版)
   // ------------------------------------------------------------------
-  const [countDownStr, setCountDownStr] = useState("");
 
   useEffect(() => {
     // 没钱就不算了
