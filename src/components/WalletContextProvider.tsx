@@ -15,7 +15,7 @@ import "@solana/wallet-adapter-react-ui/styles.css";
 
 const WalletContextProvider: FC<{ children: ReactNode }> = ({ children }) => {
   // Quicknode 节点
-  const endpoint = "https://divine-orbital-dawn.solana-mainnet.quiknode.pro/b0b0db6c879f5ade13b4e2087c84f5d0c8f61739";
+  const endpoint = "https://rpc.mgt-token.company/b0b0db6c879f5ade13b4e2087c84f5d0c8f61739";
 
   // 🌟 1. 配置常用钱包
   // OKX App 内置浏览器通常会拦截 Phantom 或 Standard 协议，所以加上这些能增加识别率
@@ -55,4 +55,4 @@ const WalletContextProvider: FC<{ children: ReactNode }> = ({ children }) => {
   );  
 };
 
-export default WalletContextProvider;  
+export default WalletContextProvider;
