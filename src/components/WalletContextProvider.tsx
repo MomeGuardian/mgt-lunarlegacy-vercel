@@ -8,11 +8,7 @@ import { PhantomWalletAdapter, SolflareWalletAdapter } from "@solana/wallet-adap
 import "@solana/wallet-adapter-react-ui/styles.css";
 
 const WalletContextProvider: FC<{ children: ReactNode }> = ({ children }) => {
-  
-  // ✅✅✅ 核心修改：改回你的伪装域名！✅✅✅
-  // 因为你已经关掉了 Referrer 白名单，现在这个域名既能绕过墙，又不会报错了！
-  // 这才是解决中国区卡顿的终极钥匙。
-  const endpoint = "https://rpc.mgt-token.company/b0b0db6c879f5ade13b4e2087c84f5d0c8f61739";
+const endpoint = "https://divine-orbital-dawn.solana-mainnet.quiknode.pro/30487788f9c117978bd9ced0e23044c9c7ae0c36";
 
   const wallets = useMemo(
     () => [
@@ -26,7 +22,6 @@ const WalletContextProvider: FC<{ children: ReactNode }> = ({ children }) => {
     console.error("Wallet error:", error);
   }, []);
 
-  // 延迟挂载：给 OKX 手机端一点反应时间
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     const timer = setTimeout(() => {
