@@ -14,14 +14,14 @@ import bs58 from 'bs58';
 import confetti from 'canvas-confetti';
 
 // ------------------------------------------------------------------
-// 🌍 多语言配置字典 (完美支持中英切换)
+// 🌍 多语言配置字典 (已修复逗号问题，包含非遗文案)
 // ------------------------------------------------------------------
 const translations = {
   zh: {
     connect: "连接钱包",
     more_leaderboard: "实时排行榜",
-    more_rules: "直推规则",
-    more_intro: "项目介绍",
+    more_rules: "推广规则",
+    more_intro: "MGT介绍",
     lang_switch: "语言 / Language",
     hero_title: "$MGT 直推军团",
     hero_desc: "连接钱包，开启",
@@ -38,20 +38,28 @@ const translations = {
     
     // --- 💰 卡片 1: 业绩 ---
     team_volume: "我的直推总业绩",
-    team_volume_desc: "直推交易额 (U本位)",
+    team_volume_desc: "直推总交易额 (USDT)",
     check_leaderboard: "查看榜单",
 
     // --- 🎁 卡片 2: 锁仓 ---
-    pending_reward: "总锁仓",
+    pending_reward: "总锁仓余额",
     pending_reward_desc: "14天释放 · 每日累计",
-    today_available: "今日可领",
+    today_available: "当前可领收益",
     click_harvest: "一键领取",
     wait_release: "等待释放",
-    harvest_btn: "领取收益", // 按钮大字
+    harvest_btn: "收取收益", // 按钮大字
 
     // --- 👥 卡片 3: 人数 ---
     my_referrals: "我的直推人数",
     click_to_view: "点击查看",
+
+    // --- ℹ️ 介绍弹窗专用 (非遗版) ---
+    intro_title: "$MGT 核心愿景",
+    intro_core_title: "Solana × 全球非遗",
+    intro_core_desc: "全球首个将 Solana 高速区块链技术与【全球非物质文化遗产】深度融合的数字资产。",
+    intro_safe_title: "生态落地 & 兑换",
+    intro_safe_desc: "拒绝空气币！$MGT 打通虚实边界，代币可直接用于【兑换全球非遗珍品】与传承体验。",
+    intro_ca_label: "合约地址 (点击复制)",
 
     // --- 其他 ---
     claim_loading: "计算释放中...",
@@ -100,6 +108,14 @@ const translations = {
     // --- Card 3: Referrals ---
     my_referrals: "My Referrals",
     click_to_view: "View Details",
+
+    // --- ℹ️ Intro Modal (ICH Version) ---
+    intro_title: "Vision of $MGT",
+    intro_core_title: "Solana × Global ICH",
+    intro_core_desc: "The world's first digital asset integrating Solana speed with Global Intangible Cultural Heritage.",
+    intro_safe_title: "Ecosystem Redemption",
+    intro_safe_desc: "More than crypto! $MGT ecosystem allows you to redeem authentic ICH treasures and experiences.",
+    intro_ca_label: "Contract Address (Tap to Copy)",
 
     // --- Others ---
     claim_loading: "Calculating...",
@@ -167,7 +183,6 @@ const Navbar = ({
         </motion.div>
 
         <div className="flex items-center gap-2">
-          
           <div id="mini-wallet-wrapper" className="origin-right relative">
             <WalletMultiButton style={{ padding: 0, minWidth: 0 }}>
                 <div className="relative flex items-center justify-center w-full h-full">
@@ -257,7 +272,7 @@ export default function Home() {
   
   const [lastReleasedAmount, setLastReleasedAmount] = useState(0); 
 
-  // ✅ 倒计时状态
+  // ✅✅✅ 修复：在这里补上了 countDownStr 的声明，解决 ReferenceError
   const [countDownStr, setCountDownStr] = useState("");
 
   const [isBinding, setIsBinding] = useState(false); 
@@ -558,7 +573,7 @@ export default function Home() {
       const dayLast = Math.floor(bjLastTs / (1000 * 60 * 60 * 24));
 
       const daysPassed = dayNow - dayLast;
-      const isZh = lang === 'zh'; // 判断当前语言
+      const isZh = lang === 'zh'; 
 
       if (daysPassed >= 1) {
         // ✅ 可领：显示累积文案
@@ -602,7 +617,7 @@ export default function Home() {
     const interval = setInterval(checkAvailability, 1000);
 
     return () => clearInterval(interval);
-  }, [lockedReward, lastVestingTime, lang]); // 👈 增加 lang 依赖
+  }, [lockedReward, lastVestingTime, lang]); 
 
   // ------------------------------------------------------------------
   // ✅ 3. 收取释放
@@ -804,47 +819,200 @@ export default function Home() {
             )}
         </AnimatePresence>
 
-        {/* 📜 规则弹窗 */}
+        {/* 📜 规则弹窗 (Pro Max 版) */}
         <AnimatePresence>
             {showRules && (
-                <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+                <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
                     <motion.div 
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.9 }}
-                        className="w-full max-w-md bg-[#111] border border-blue-500/30 rounded-2xl shadow-2xl p-6 relative"
+                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                        className="w-full max-w-lg bg-[#16171D] border border-blue-500/20 rounded-3xl shadow-[0_0_60px_-15px_rgba(59,130,246,0.3)] relative overflow-hidden"
                     >
-                        <button onClick={() => setShowRules(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white">✕</button>
-                        <h3 className="text-xl font-bold text-blue-400 mb-4">📜 {t.more_rules}</h3>
-                        <div className="space-y-3 text-gray-300 text-sm leading-relaxed">
-                            <p>1. <span className="text-white font-bold">绑定关系：</span> 连接钱包后，系统自动绑定邀请关系。</p>
-                            <p>2. <span className="text-white font-bold">线性释放：</span> 奖励进入冻结池，每日自动释放 <span className="text-yellow-400 font-bold">0.17%</span>。</p>
-                            <p>3. <span className="text-white font-bold">排行榜：</span> 实时更新直推人数和业绩。</p>
-                            <p>4. <span className="text-white font-bold">收取释放：</span> 点击“收取释放”按钮结算当前已释放的奖励。</p>
+                        {/* ✨ 氛围背景光 */}
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-[80px] -z-10 pointer-events-none"></div>
+                        <div className="absolute bottom-0 left-0 w-40 h-40 bg-purple-500/10 rounded-full blur-[60px] -z-10 pointer-events-none"></div>
+
+                        {/* 🏷️ 标题栏 */}
+                        <div className="p-6 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
+                            <h3 className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 flex items-center gap-2">
+                                📜 {t.more_rules} <span className="text-xs font-medium text-gray-600 bg-white/10 px-2 py-0.5 rounded-full border border-white/5">V2.0</span>
+                            </h3>
+                            <button 
+                                onClick={() => setShowRules(false)} 
+                                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-all border border-transparent hover:border-white/20"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        {/* 📝 内容区：卡片式布局 */}
+                        <div className="p-6 space-y-3 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                            
+                            {/* 规则 1 */}
+                            <div className="group flex gap-4 p-4 rounded-2xl bg-black/20 border border-white/5 hover:border-blue-500/30 hover:bg-black/40 transition-all duration-300">
+                                <div className="shrink-0 w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20 text-xl group-hover:scale-110 transition-transform">
+                                    🔗
+                                </div>
+                                <div>
+                                    <h4 className="text-blue-100 font-bold text-sm mb-1">永久绑定关系</h4>
+                                    <p className="text-xs text-gray-400 leading-relaxed">
+                                        连接钱包即刻自动锁定，链上数据不可篡改。一次绑定，永久享受下级返佣。
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* 规则 2 */}
+                            <div className="group flex gap-4 p-4 rounded-2xl bg-black/20 border border-white/5 hover:border-yellow-500/30 hover:bg-black/40 transition-all duration-300">
+                                <div className="shrink-0 w-10 h-10 rounded-xl bg-yellow-500/10 flex items-center justify-center border border-yellow-500/20 text-xl group-hover:scale-110 transition-transform">
+                                    ⏳
+                                </div>
+                                <div>
+                                    <h4 className="text-yellow-100 font-bold text-sm mb-1">14天线性释放</h4>
+                                    <p className="text-xs text-gray-400 leading-relaxed">
+                                        返佣奖励进入冻结池，每日自动释放 <span className="text-yellow-400 font-bold">1/14</span>。每日 00:00 刷新，支持<span className="text-white">“每日领取”</span>或<span className="text-white">“懒人累积”</span>。
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* 规则 3 */}
+                            <div className="group flex gap-4 p-4 rounded-2xl bg-black/20 border border-white/5 hover:border-purple-500/30 hover:bg-black/40 transition-all duration-300">
+                                <div className="shrink-0 w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20 text-xl group-hover:scale-110 transition-transform">
+                                    🏆
+                                </div>
+                                <div>
+                                    <h4 className="text-purple-100 font-bold text-sm mb-1">实时荣耀榜单</h4>
+                                    <p className="text-xs text-gray-400 leading-relaxed">
+                                        全网实时更新直推人数与总业绩。冲击榜单前十，未来可能获得额外空投奖励。
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* 规则 4 */}
+                            <div className="group flex gap-4 p-4 rounded-2xl bg-black/20 border border-white/5 hover:border-green-500/30 hover:bg-black/40 transition-all duration-300">
+                                <div className="shrink-0 w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center border border-green-500/20 text-xl group-hover:scale-110 transition-transform">
+                                    🧹
+                                </div>
+                                <div>
+                                    <h4 className="text-green-100 font-bold text-sm mb-1">智能扫尾机制</h4>
+                                    <p className="text-xs text-gray-400 leading-relaxed">
+                                        当剩余冻结金额小于 <span className="text-green-400 font-mono">10 MGT</span> 时，系统将触发“扫尾”，允许您一次性提现所有余额，彻底清零！
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* ✅ 底部按钮 */}
+                        <div className="p-5 border-t border-white/5 bg-black/20">
+                            <button 
+                                onClick={() => setShowRules(false)}
+                                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold shadow-lg shadow-blue-900/20 active:scale-95 transition-all text-sm tracking-wide"
+                            >
+                                明白了，开始赚钱 🚀
+                            </button>
                         </div>
                     </motion.div>
                 </div>
             )}
         </AnimatePresence>
 
-        {/* ℹ️ 介绍弹窗 */}
+        {/* ℹ️ 项目介绍弹窗 (非遗文化限定版) */}
         <AnimatePresence>
             {showIntro && (
-                <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+                <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/90 backdrop-blur-xl p-4">
                     <motion.div 
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.9 }}
-                        className="w-full max-w-md bg-[#111] border border-purple-500/30 rounded-2xl shadow-2xl p-6 relative"
+                        initial={{ opacity: 0, scale: 0.9, rotateX: 10 }}
+                        animate={{ opacity: 1, scale: 1, rotateX: 0 }}
+                        exit={{ opacity: 0, scale: 0.9, rotateX: 10 }}
+                        className="w-full max-w-lg bg-[#121212] border border-white/10 rounded-3xl shadow-[0_0_80px_-20px_rgba(168,85,247,0.4)] relative overflow-hidden"
                     >
-                        <button onClick={() => setShowIntro(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white">✕</button>
-                        <h3 className="text-xl font-bold text-purple-400 mb-4">ℹ️ About $MGT</h3>
-                        <div className="space-y-3 text-gray-300 text-sm leading-relaxed">
-                            <p>$MGT (Moon Global Token) 是 Solana 链上首个结合 <span className="text-white font-bold">“强地推 + 线性释放”</span> 的创新 Meme 代币。</p>
-                            <div className="mt-4 p-3 bg-gray-900 rounded-lg border border-gray-700">
-                                <p className="text-xs text-gray-500 mb-1">Contract Address (CA):</p>
-                                <p className="text-xs text-green-400 font-mono break-all">{contractAddress}</p>
+                        {/* 🏮 背景氛围：左下紫气东来，右上金光闪耀 */}
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full blur-[80px] -z-10 pointer-events-none"></div>
+                        <div className="absolute bottom-0 left-0 w-56 h-56 bg-purple-600/15 rounded-full blur-[60px] -z-10 pointer-events-none"></div>
+
+                        {/* 🏷️ 标题栏 */}
+                        <div className="p-6 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
+                            <h3 className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 flex items-center gap-2">
+                                ℹ️ {t.intro_title} 
+                            </h3>
+                            <button 
+                                onClick={() => setShowIntro(false)} 
+                                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-all"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        {/* 📜 内容区 */}
+                        <div className="p-6 space-y-5">
+                            
+                            {/* 1. 核心愿景卡片 (Solana x 非遗) */}
+                            <div className="group relative p-5 rounded-2xl bg-gradient-to-br from-[#1A1A2E] to-[#16213E] border border-blue-500/20 overflow-hidden hover:border-blue-500/40 transition-all">
+                                {/* 装饰图标 */}
+                                <div className="absolute top-2 right-3 text-5xl opacity-10 group-hover:opacity-20 transition-opacity grayscale group-hover:grayscale-0">
+                                    🌏
+                                </div>
+                                <div className="relative z-10">
+                                    <h4 className="text-blue-200 font-bold text-base mb-2 flex items-center gap-2">
+                                        <span className="w-1 h-4 bg-blue-500 rounded-full"></span>
+                                        {t.intro_core_title}
+                                    </h4>
+                                    <p className="text-xs md:text-sm text-gray-400 leading-relaxed text-justify">
+                                        {t.intro_core_desc}
+                                    </p>
+                                </div>
                             </div>
+
+                            {/* 2. 生态落地卡片 (实物兑换) */}
+                            <div className="group relative p-5 rounded-2xl bg-gradient-to-br from-[#1F1100] to-[#2E1A05] border border-amber-500/20 overflow-hidden hover:border-amber-500/40 transition-all">
+                                {/* 装饰图标 - 琥珀色光晕 */}
+                                <div className="absolute -inset-1 bg-amber-500/5 blur-xl group-hover:bg-amber-500/10 transition-all"></div>
+                                <div className="absolute top-2 right-3 text-5xl opacity-10 group-hover:opacity-20 transition-opacity grayscale group-hover:grayscale-0">
+                                    🏺
+                                </div>
+                                
+                                <div className="relative z-10">
+                                    <h4 className="text-amber-200 font-bold text-base mb-2 flex items-center gap-2">
+                                        <span className="w-1 h-4 bg-amber-500 rounded-full"></span>
+                                        {t.intro_safe_title}
+                                    </h4>
+                                    <p className="text-xs md:text-sm text-gray-400 leading-relaxed text-justify">
+                                        {t.intro_safe_desc}
+                                    </p>
+                                    {/* 标签 */}
+                                    <div className="mt-3 flex gap-2">
+                                        <span className="text-[10px] bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded border border-amber-500/20">
+                                            🎁 实物兑换
+                                        </span>
+                                        <span className="text-[10px] bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded border border-amber-500/20">
+                                            🏮 文化传承
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* 3. CA 复制交互区 */}
+                            <div className="space-y-2 pt-2">
+                                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider pl-1">{t.intro_ca_label}</p>
+                                <button
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(contractAddress);
+                                        toast.success(t.addr_copied);
+                                        if (navigator.vibrate) navigator.vibrate(50);
+                                    }}
+                                    className="w-full flex items-center justify-between bg-black/40 hover:bg-black/60 border border-white/10 hover:border-purple-500/30 rounded-xl p-4 transition-all group active:scale-95"
+                                >
+                                    <div className="flex flex-col items-start gap-1 overflow-hidden">
+                                        <span className="text-xs font-mono font-bold text-purple-400 break-all text-left">
+                                            {contractAddress}
+                                        </span>
+                                    </div>
+                                    <span className="shrink-0 bg-white/5 p-2 rounded-lg group-hover:bg-purple-500/20 group-hover:text-purple-400 transition-colors">
+                                        📄
+                                    </span>
+                                </button>
+                            </div>
+
                         </div>
                     </motion.div>
                 </div>
