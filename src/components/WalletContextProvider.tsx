@@ -12,7 +12,7 @@ const WalletContextProvider: FC<{ children: ReactNode }> = ({ children }) => {
   // ✅✅✅ 核心修改：改回你的伪装域名！✅✅✅
   // 因为你已经关掉了 Referrer 白名单，现在这个域名既能绕过墙，又不会报错了！
   // 这才是解决中国区卡顿的终极钥匙。
-  const endpoint = "https://rpc.mgt-token.company/b0b0db6c879f5ade13b4e2087c84f5d0c8f61739/";
+  const endpoint = "https://rpc.mgt-token.company/b0b0db6c879f5ade13b4e2087c84f5d0c8f61739";
 
   const wallets = useMemo(
     () => [
